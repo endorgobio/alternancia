@@ -2,14 +2,11 @@ import pandas as pd
 from pyomo.environ import *
 from pyomo.opt import *
 
-def create_model(instance):
-    # de la instacia
-    n_min = 2  # tamaño mínimo de curso
-    n_max = 20  # tamaño máximo de grupo
-    # Diferencia en el balanceo por genero
-    bal_gen = 0.68
-    # Aforo del colegio
-    aforo = 30
+def create_model(instance,
+                 n_min=2,  # tamaño mínimo de curso
+                 n_max=20,  # tamaño máximo de grupo
+                 bal_gen=0.68,  # Diferencia en el balanceo por genero
+                 aforo=30): # Aforo del colegio):
 
     # Define el modelo
     # Crea el modelo
@@ -102,7 +99,7 @@ def create_model(instance):
 def resolver_opt(instance,
                  model,
                  solvername = 'glpk',
-                 solverpath_exe = 'C:\\glpk-4.65\\w64\\glpsol'):
+                 solverpath_exe = 'D:\\glpk-4.65\\w64\\glpsol'):
     # Configura optimizador
     # solvername = 'glpk'
     # solverpath_exe = 'C:\\glpk-4.65\\w64\\glpsol'
