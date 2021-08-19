@@ -123,7 +123,7 @@ def resolver_opt(instance,
                     row.append(0)
             df_sol.loc[len(df_sol.index)] = row
 
-    # Une el dataframe de la solución con el dataframe original
+    # Une el dataframe de la solucion con el dataframe original
     df_merged = pd.merge(instance.df, df_sol, on='var_id')
 
     # Número de estudiantes asignados

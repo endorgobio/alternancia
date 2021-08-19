@@ -69,7 +69,7 @@ class Instance:
         # Conjunto de días
         self.DIAS = {'L', 'Ma', 'Mi', 'J', 'V'}
         # Conjunto de patrones (lista de conjuntos)
-        self.PATRONES = {1: {'L', 'Mi'}, 2: {'Ma', 'J'}, 3: {'Mi', 'V'}}
+        self.PATRONES = {1: {'L', 'Mi'}, 2: {'Ma', 'J'}, 3: {'Mi', 'V'}, 4: {'L', 'V'}}
         # Patrones por día
         self.PAT_DIA = {i: set() for i in self.DIAS}
         [self.PAT_DIA[dia].add(key) for key in self.PATRONES.keys() for dia in self.PATRONES[key]]

@@ -31,6 +31,7 @@ server = app.server
 df = pd.read_excel (r'data\Estudiantes.xlsx')
 
 
+
 # crea instancia
 instance = Instance(df)
 # procesa dataframe
@@ -158,7 +159,7 @@ tab2_content = html.Div(
                                         # df.columns
                                     ],
                                     style_table={'overflowX': 'auto'},
-                                    style_cell={'textAlign': 'left', },
+                                    #style_cell={'textAlign': 'left', },
                                     style_cell_conditional=[
                                         {'if': {'column_id': 'nombre'},
                                          'width': '35%'},
@@ -172,13 +173,13 @@ tab2_content = html.Div(
                                          'width': '27%'},
                                     ],
 
-                                    # css=[{'selector': 'table', 'rule': 'table-layout: fixed'}],
-                                    # style_cell={
-                                    #     'textAlign': 'left',
-                                    #     'width': '{}%'.format(len(df.columns)),
-                                    #     'textOverflow': 'ellipsis',
-                                    #     'overflow': 'hidden'
-                                    # },
+                                    css=[{'selector': 'table', 'rule': 'table-layout: fixed'}],
+                                    style_cell={
+                                        'textAlign': 'left',
+                                        'width': '{}%'.format(len(df.columns)),
+                                        'textOverflow': 'ellipsis',
+                                        'overflow': 'hidden'
+                                    },
                                     style_as_list_view=True,
                                     page_current=0,
                                     page_size=PAGE_SIZE,
@@ -187,41 +188,31 @@ tab2_content = html.Div(
                             ]
                         )
                     ),
-
-
-                    # dash_table.DataTable(
-                    # data=df.to_dict('records'),
-                    # columns=[{'id': c, 'name': c} for c in df.columns],
-                    # style_table={'overflowX': 'auto'},
-                    # style_cell={
-                    #     'height': 'auto',
-                    #     # all three widths are needed
-                    #     'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
-                    #     'whiteSpace': 'normal'
-                    # }
-                    # )
+                    md=12
                 ),
             ],
             align="center",
+
         ),
         # Line graph and controls
         dbc.Row(
             className="row-with-margin",
             children=[
                 dbc.Col(controls_model,
-                        width=4,
-                        md = 4),
+                        md=4),
                 dbc.Col(
-                    dbc.Card(
-                        dbc.CardBody(
-                            [
-                                tab1_text,
-                                html.Div(id='my-output'),
-                            ]
-                        )
-                    ),
-                    width=8,
-                    md = 8
+                    dcc.Graph(id="heatmap"),
+                    # dbc.Card(
+                    #     dbc.CardBody(
+                    #         [
+                    #             # html.Div(dcc.Graph(id="heatmap"),
+                    #             #          style={'overflowY': 'scroll', 'height': 750}
+                    #             #          )
+                    #             # #html.Div(id='my-output'),
+                    #         ]
+                    #     )
+                    # ),
+                    md=8
                 ),
             ],
             align="center",
@@ -289,7 +280,7 @@ def render_tab_content(active_tab):
 
 
 # Solve the model
-@app.callback(Output('my-output', 'children'),
+@app.callback(Output('heatmap', 'figure'),
               Input('resolver', 'n_clicks'),
               State('g_minimo', 'value'),
               State('g_maximo', 'value'),
@@ -303,9 +294,30 @@ def update_model_run(n_clicks, g_min, g_max, balance, aforoT):
                              balance/100,
                              aforoT)
     df_sol, estu_asig = opt.resolver_opt(instance, model)
-    return estu_asig
+    print(estu_asig)
+    data = df_sol[['nombre', 'id', 'L', 'Ma', 'Mi', 'J', 'V']]
+    data_scater = pd.DataFrame(columns = ['nombre', 'id', 'dia'])
+    for i in range(len(data)):
+        for col in ['L', 'Ma', 'Mi', 'J', 'V']:
+            if data.loc[i, col] == 1:
+                data_scater = data_scater.append({'nombre': df.loc[i, 'nombre'],
+                                                  'id': df.loc[i, 'id'],
+                                                  'dia': col},
+                                                 ignore_index=True)
 
+    #data = df_sol[['L', 'Ma', 'Mi', 'J', 'V']]
+    #fig = px.imshow(data)
+    # fig = px.imshow(data,
+    #                 labels=dict(x="Day of Week", y="Time of Day"),
+    #                 x=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    #                 y=df_sol.id.astype('str'),
+    #                 )
+    # fig.update_traces(showscale=False)
+    #print(data_scater.head())
+    fig = px.scatter(x=data_scater.dia, y=data_scater.nombre)
+    return fig
 
+# Update table with student information
 @app.callback(
     Output('datatable-paging-page-count', 'data'),
     Input('datatable-paging-page-count', "page_current"),
