@@ -10,12 +10,13 @@ from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
+import time
 from plotly import graph_objs as go
 
 
 # Define the stylesheets
 external_stylesheets = [dbc.themes.BOOTSTRAP,
-    #'https://codepen.io/chriddyp/pen/bWLwgP.css',
+    #'https://codepen.io/chriddyp/pen/bWLwgP.css'
     'https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap',
     #'https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet'
 ]
@@ -29,6 +30,8 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
 #                 suppress_callback_exceptions=True,
 #                 prevent_initial_callbacks=True, transforms=[MultiplexerTransform()])
 #
+
+
 # need to run it in heroku
 server = app.server
 
@@ -93,9 +96,7 @@ controls_model = html.Div(
                             dbc.Input(id="aforo", type="number", min=0, max=len(instance.df), step=1, value=30),
                         ]
                     ),
-                    dbc.Button(
-                        "Resolver", id="resolver", className="mr-2", n_clicks=0
-                    ),
+                    dbc.Button("Resolver", id="resolver", className="mr-2", n_clicks=0)
                 ]
             ),
         ),
@@ -103,12 +104,7 @@ controls_model = html.Div(
 )
 
 
-# # Número de estudiantes
-# print("número de estudiantes: ", df.shape[0] )
-# # Obtener función objetivo
-# obj_val = model.total_value.expr()
-# print("número de asignados: ", int(obj_val))
-
+#
 
 # initial text
 tab1_text = dcc.Markdown('''
@@ -205,6 +201,12 @@ tab2_content = html.Div(
             className="row-with-margin",
             children=[
                 dbc.Col(controls_model,
+                        # dcc.Loading(
+                        #     id="loading-2",
+                        #     children=[controls_model],
+                        #     type="circle",
+                        #     fullscreen=True
+                        # ),
                         md=4),
                 dbc.Col(children=[
                     dbc.Row(children=[
@@ -306,7 +308,7 @@ def update_table(page_current, page_size):
               State('aforo', 'value'),
               State('fileterEstu', 'value')
               )
-def run_model(click_resolver, click_filtrar, data_solver, g_min, g_max, balance, aforoT, filter_value):
+def run_model_fitler(click_resolver, click_filtrar, data_solver, g_min, g_max, balance, aforoT, filter_value):
     ctx = dash.callback_context
     if not ctx.triggered:
         button_id = 'No clicks yet'
