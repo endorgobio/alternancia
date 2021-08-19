@@ -3,6 +3,7 @@ import optimiser as opt
 from utilities import Instance
 import plotly.express as px
 import dash
+from dash_extensions.enrich import Output, DashProxy, Input, MultiplexerTransform
 import dash_table
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
@@ -23,6 +24,11 @@ external_stylesheets = [dbc.themes.BOOTSTRAP,
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
                 title="Seguridad alimentaria",
                 suppress_callback_exceptions=True)
+# app = DashProxy(__name__, external_stylesheets=external_stylesheets,
+#                 title="Seguridad alimentaria",
+#                 suppress_callback_exceptions=True,
+#                 prevent_initial_callbacks=True, transforms=[MultiplexerTransform()])
+#
 # need to run it in heroku
 server = app.server
 
@@ -201,9 +207,12 @@ tab2_content = html.Div(
                 dbc.Col(controls_model,
                         md=4),
                 dbc.Col(children=[
-                    dcc.Dropdown(id='fileterEstu',
-                                 multi=True
-                                 ),
+                    dbc.Row(children=[
+                    #html.Div(children=[
+                                    dbc.Col(dcc.Dropdown(id='fileterEstu',multi=True), md=6),
+                                    dbc.Col(dbc.Button("Filtrar", id="filtrar", className="mr-2", n_clicks=0), md=1)
+                                ],),
+                        #style={'display': 'inline-block'}),
                     dcc.Graph(id="heatmap")
                     ],
                     md=8
@@ -251,7 +260,9 @@ app.layout = dbc.Container([
         ),
         dbc.Row(id="tab-content", className="p-4"),
     # dcc.Store inside the app that stores the intermediate value
-    dcc.Store(id='intermediate-value')
+    dcc.Store(id='data_solver'),
+    dcc.Store(id='data_solver_filtered'),
+
     ],
     fluid=True,
 )
@@ -274,40 +285,68 @@ def render_tab_content(active_tab):
     elif active_tab == "detalles":
         return tab3_content
 
+# Update table with student information
+@app.callback(
+    Output('datatable-paging-page-count', 'data'),
+    Input('datatable-paging-page-count', "page_current"),
+    Input('datatable-paging-page-count', "page_size"))
+def update_table(page_current, page_size):
+    return df.iloc[page_current*page_size:(page_current+ 1)*page_size].to_dict('records')
 
 # Solve the model
-@app.callback(Output('intermediate-value', 'data'),
+@app.callback(Output('data_solver', 'data'),
+              Output('data_solver_filtered', 'data'),
+              Output('fileterEstu', 'value'),
               Input('resolver', 'n_clicks'),
+              Input('filtrar', 'n_clicks'),
+              State('data_solver', 'data'),
               State('g_minimo', 'value'),
               State('g_maximo', 'value'),
               State('bal_gen', 'value'),
-              State('aforo', 'value')
+              State('aforo', 'value'),
+              State('fileterEstu', 'value')
               )
-def run_model(n_clicks, g_min, g_max, balance, aforoT):
-    model = opt.create_model(instance,
-                              g_min,
-                              g_max,
-                              balance / 100,
-                              aforoT)
-    df_sol, estu_asig = opt.resolver_opt(instance, model)
-    # print(estu_asig)
-    data = df_sol[['nombre', 'id', 'L', 'Ma', 'Mi', 'J', 'V']]
-    data_scater = pd.DataFrame(columns=['nombre', 'id', 'dia'])
-    for i in range(len(data)):
-        for col in ['L', 'Ma', 'Mi', 'J', 'V']:
-            if data.loc[i, col] == 1:
-                data_scater = data_scater.append({'nombre': df.loc[i, 'nombre'],
-                                                  'id': df.loc[i, 'id'],
-                                                  'dia': col},
-                                                 ignore_index=True)
+def run_model(click_resolver, click_filtrar, data_solver, g_min, g_max, balance, aforoT, filter_value):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        button_id = 'No clicks yet'
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    return data_scater.to_json(date_format='iso', orient='split')
+    if button_id == 'resolver':
+        model = opt.create_model(instance,
+                                  g_min,
+                                  g_max,
+                                  balance / 100,
+                                  aforoT)
+        df_sol, estu_asig = opt.resolver_opt(instance, model)
+        # print(estu_asig)
+        data = df_sol[['nombre', 'id', 'L', 'Ma', 'Mi', 'J', 'V']]
+        data_scater = pd.DataFrame(columns=['nombre', 'id', 'dia'])
+        for i in range(len(data)):
+            for col in ['L', 'Ma', 'Mi', 'J', 'V']:
+                if data.loc[i, col] == 1:
+                    data_scater = data_scater.append({'nombre': df.loc[i, 'nombre'],
+                                                      'id': df.loc[i, 'id'],
+                                                      'dia': col},
+                                                     ignore_index=True)
+        data_returned = data_scater.to_json(date_format='iso', orient='split')
+        return data_returned, data_returned, None
+    elif button_id == 'filtrar':
+        data_scatter = pd.read_json(data_solver, orient='split')
+        if filter_value:
+            data_scatter_filtered = data_scatter[data_scatter['nombre'].isin(filter_value)]
+        else:
+            data_scatter_filtered = data_scatter
+        data_returned = data_scatter_filtered.to_json(date_format='iso', orient='split')
+        return data_solver, data_returned, None
+
 
 
 @app.callback(Output('heatmap', 'figure'),
-              Input('intermediate-value', 'data')
+              Input('data_solver_filtered', 'data')
               )
-def update_model_run(jsonified_sol_data):
+def update_scatter(jsonified_sol_data):
     # model = opt.create_model(instance,
     #                          g_min,
     #                          g_max,
@@ -337,31 +376,42 @@ def update_model_run(jsonified_sol_data):
     fig = px.scatter(x=data_scater.dia, y=data_scater.nombre)
     return fig
 
-# filter students
+# Populated dropdown for filtering students
 @app.callback(
     Output('fileterEstu', 'options'),
-    Input('intermediate-value', 'data')
+    Input('data_solver', 'data')
 )
-def dropdown_filter(jsonified_sol_data):
+def dropdown_filter_options(jsonified_sol_data):
     data_scater = pd.read_json(jsonified_sol_data, orient='split')
     data_scater = data_scater[['id', 'nombre']]
     data_scater.sort_values("id", inplace=True)
-    print(data_scater)
     # dropping ALL duplicate values
     no_repetead = data_scater.drop_duplicates(keep='first')
     no_repetead.reset_index(inplace=True)
-    print(no_repetead)
     options = [{'label': no_repetead.loc[i, 'id'], 'value': no_repetead.loc[i, 'nombre']} for i in range(len(no_repetead))]
     return options
 
+# Populated dropdown for filtering students
+# @app.callback(
+#     Output('data_solver_filtered', 'data'),
+#     [Input('data_solver', 'data'),
+#      Input('fileterEstu', 'value')]
+# )
+# def filter_solution(jsonified_sol_data, dropdown_values):
+#     print(type(dropdown_values))
+#     # data_scater = pd.read_json(jsonified_sol_data, orient='split')
+#     # data_scater = data_scater[['id', 'nombre']]
+#     # data_scater.sort_values("id", inplace=True)
+#     # print(data_scater)
+#     # # dropping ALL duplicate values
+#     # no_repetead = data_scater.drop_duplicates(keep='first')
+#     # no_repetead.reset_index(inplace=True)
+#     # print(no_repetead)
+#     # options = [{'label': no_repetead.loc[i, 'id'], 'value': no_repetead.loc[i, 'nombre']} for i in range(len(no_repetead))]
+#     return dropdown_values
 
-# Update table with student information
-@app.callback(
-    Output('datatable-paging-page-count', 'data'),
-    Input('datatable-paging-page-count', "page_current"),
-    Input('datatable-paging-page-count', "page_size"))
-def update_table(page_current, page_size):
-    return df.iloc[page_current*page_size:(page_current+ 1)*page_size].to_dict('records')
+
+
 
 # main to run the app
 if __name__ == "__main__":
