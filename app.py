@@ -200,18 +200,12 @@ tab2_content = html.Div(
             children=[
                 dbc.Col(controls_model,
                         md=4),
-                dbc.Col(
-                    dcc.Graph(id="heatmap"),
-                    # dbc.Card(
-                    #     dbc.CardBody(
-                    #         [
-                    #             # html.Div(dcc.Graph(id="heatmap"),
-                    #             #          style={'overflowY': 'scroll', 'height': 750}
-                    #             #          )
-                    #             # #html.Div(id='my-output'),
-                    #         ]
-                    #     )
-                    # ),
+                dbc.Col(children=[
+                    dcc.Dropdown(id='fileterEstu',
+                                 multi=True
+                                 ),
+                    dcc.Graph(id="heatmap")
+                    ],
                     md=8
                 ),
             ],
@@ -256,6 +250,8 @@ app.layout = dbc.Container([
             active_tab="historia",
         ),
         dbc.Row(id="tab-content", className="p-4"),
+    # dcc.Store inside the app that stores the intermediate value
+    dcc.Store(id='intermediate-value')
     ],
     fluid=True,
 )
@@ -280,23 +276,23 @@ def render_tab_content(active_tab):
 
 
 # Solve the model
-@app.callback(Output('heatmap', 'figure'),
+@app.callback(Output('intermediate-value', 'data'),
               Input('resolver', 'n_clicks'),
               State('g_minimo', 'value'),
               State('g_maximo', 'value'),
               State('bal_gen', 'value'),
               State('aforo', 'value')
-)
-def update_model_run(n_clicks, g_min, g_max, balance, aforoT):
+              )
+def run_model(n_clicks, g_min, g_max, balance, aforoT):
     model = opt.create_model(instance,
-                             g_min,
-                             g_max,
-                             balance/100,
-                             aforoT)
+                              g_min,
+                              g_max,
+                              balance / 100,
+                              aforoT)
     df_sol, estu_asig = opt.resolver_opt(instance, model)
-    print(estu_asig)
+    # print(estu_asig)
     data = df_sol[['nombre', 'id', 'L', 'Ma', 'Mi', 'J', 'V']]
-    data_scater = pd.DataFrame(columns = ['nombre', 'id', 'dia'])
+    data_scater = pd.DataFrame(columns=['nombre', 'id', 'dia'])
     for i in range(len(data)):
         for col in ['L', 'Ma', 'Mi', 'J', 'V']:
             if data.loc[i, col] == 1:
@@ -305,6 +301,30 @@ def update_model_run(n_clicks, g_min, g_max, balance, aforoT):
                                                   'dia': col},
                                                  ignore_index=True)
 
+    return data_scater.to_json(date_format='iso', orient='split')
+
+
+@app.callback(Output('heatmap', 'figure'),
+              Input('intermediate-value', 'data')
+              )
+def update_model_run(jsonified_sol_data):
+    # model = opt.create_model(instance,
+    #                          g_min,
+    #                          g_max,
+    #                          balance/100,
+    #                          aforoT)
+    # df_sol, estu_asig = opt.resolver_opt(instance, model)
+    # #print(estu_asig)
+    # data = df_sol[['nombre', 'id', 'L', 'Ma', 'Mi', 'J', 'V']]
+    # data_scater = pd.DataFrame(columns = ['nombre', 'id', 'dia'])
+    # for i in range(len(data)):
+    #     for col in ['L', 'Ma', 'Mi', 'J', 'V']:
+    #         if data.loc[i, col] == 1:
+    #             data_scater = data_scater.append({'nombre': df.loc[i, 'nombre'],
+    #                                               'id': df.loc[i, 'id'],
+    #                                               'dia': col},
+    #                                              ignore_index=True)
+    data_scater = pd.read_json(jsonified_sol_data, orient='split')
     #data = df_sol[['L', 'Ma', 'Mi', 'J', 'V']]
     #fig = px.imshow(data)
     # fig = px.imshow(data,
@@ -317,15 +337,31 @@ def update_model_run(n_clicks, g_min, g_max, balance, aforoT):
     fig = px.scatter(x=data_scater.dia, y=data_scater.nombre)
     return fig
 
+# filter students
+@app.callback(
+    Output('fileterEstu', 'options'),
+    Input('intermediate-value', 'data')
+)
+def dropdown_filter(jsonified_sol_data):
+    data_scater = pd.read_json(jsonified_sol_data, orient='split')
+    data_scater = data_scater[['id', 'nombre']]
+    data_scater.sort_values("id", inplace=True)
+    print(data_scater)
+    # dropping ALL duplicate values
+    no_repetead = data_scater.drop_duplicates(keep='first')
+    no_repetead.reset_index(inplace=True)
+    print(no_repetead)
+    options = [{'label': no_repetead.loc[i, 'id'], 'value': no_repetead.loc[i, 'nombre']} for i in range(len(no_repetead))]
+    return options
+
+
 # Update table with student information
 @app.callback(
     Output('datatable-paging-page-count', 'data'),
     Input('datatable-paging-page-count', "page_current"),
     Input('datatable-paging-page-count', "page_size"))
-def update_table(page_current,page_size):
-    return df.iloc[
-        page_current*page_size:(page_current+ 1)*page_size
-    ].to_dict('records')
+def update_table(page_current, page_size):
+    return df.iloc[page_current*page_size:(page_current+ 1)*page_size].to_dict('records')
 
 # main to run the app
 if __name__ == "__main__":
