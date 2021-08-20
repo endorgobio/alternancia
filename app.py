@@ -1,17 +1,17 @@
 import pandas as pd
+from dash import no_update
+
 import optimiser as opt
 from utilities import Instance
 import plotly.express as px
 import dash
-from dash_extensions.enrich import Output, DashProxy, Input, MultiplexerTransform
 import dash_table
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import time
-from plotly import graph_objs as go
+
+
 
 
 # Define the stylesheets
@@ -25,87 +25,21 @@ external_stylesheets = [dbc.themes.BOOTSTRAP,
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
                 title="Seguridad alimentaria",
                 suppress_callback_exceptions=True)
-# app = DashProxy(__name__, external_stylesheets=external_stylesheets,
-#                 title="Seguridad alimentaria",
-#                 suppress_callback_exceptions=True,
-#                 prevent_initial_callbacks=True, transforms=[MultiplexerTransform()])
-#
 
 
 # need to run it in heroku
 server = app.server
 
-# Lectura de datos
-# Leer archivos en un dataframe
+# Read data
+# Get a dataframe from data
 df = pd.read_excel (r'data\Estudiantes.xlsx')
-
-
-
-# crea instancia
+# Create instance
 instance = Instance(df)
-# procesa dataframe
+# Preprocess dataframe
 instance.data_process()
 instance.create_elementos()
 
-
-
-
-
-controlmodel_text = '''
-    * Seleccione en el menú desplegable el producto de interes
-    * En el gráfico active o desactive las ciudades que desea comparar
-    '''
-controls_model = html.Div(
-    [
-        dbc.Card(
-            dbc.CardBody(
-                [
-                    dbc.FormGroup(
-                        [
-                            html.P("Mínimo de estudiantes por curso"),
-                            dbc.Input(id="g_minimo", type="number", min=1, max=len(instance.df), step=1, value=2),
-                        ]
-                    ),
-                    dbc.FormGroup(
-                        [
-                            html.P("Máximo de estudiantes por curso"),
-                            dbc.Input(id="g_maximo", type="number", min=1, max=len(instance.df), step=1, value=20),
-                        ]
-                    ),
-                    dbc.FormGroup(
-                        [
-                            html.P("Diferencia máxima de genero por curso (%)"),
-                            dbc.Input(id="bal_gen", type="number", min=0, max=100, step=1, value=50),
-                        ]
-                    ),
-                    # dbc.FormGroup(
-                    #     [
-                    #         html.P("Diferencia máxima de genero por curso"),
-                    #         dbc.InputGroup(
-                    #             [
-                    #                 dbc.Input(id="bal_gen", type="number", min=0, max=100, step=1, value=50, placeholder="balance"),
-                    #                 dbc.InputGroupAddon("%", addon_type="append"),
-                    #             ],
-                    #             className="mb-3",
-                    #         ),
-                    #     ]
-                    # ),
-                    dbc.FormGroup(
-                        [
-                            html.P("Aforo máximo del colegio"),
-                            dbc.Input(id="aforo", type="number", min=0, max=len(instance.df), step=1, value=30),
-                        ]
-                    ),
-                    dbc.Button("Resolver", id="resolver", className="mr-2", n_clicks=0)
-                ]
-            ),
-        ),
-    ]
-)
-
-
-#
-
+# Define content for tab1
 # initial text
 tab1_text = dcc.Markdown('''
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis et sapien eu purus malesuada rutrum non sed tortor. 
@@ -130,21 +64,81 @@ Phasellus iaculis
 neque eu felis eleifend accumsan. Nulla posuere cur
 ''')
 
-
 tab1_content = dbc.Row([
         dbc.Col(tab1_text, md=8),
         dbc.Col(html.Div([
-            html.H4(
-                    children="Los retos", className="header-subtitle"
-                ),
-            reto_text]
-        ),
+            html.H4(children="Los retos", className="header-subtitle"),
+            reto_text]),
             md=4),
     ]
 )
 
+# Define content for tab2
+
 controlsmap_text = ''' aaaaaa '''
-PAGE_SIZE = 5
+PAGE_SIZE = 8
+# Table of students
+
+# Define controls for the solver
+controlmodel_text = '''
+    * Seleccione en el menú desplegable el producto de interes
+    * En el gráfico active o desactive las ciudades que desea comparar
+    '''
+controls_model = html.Div(
+    [
+        dbc.Card(
+            dbc.CardBody(
+                [
+                    dbc.FormGroup(
+                        [
+                            html.P("Mínimo de estudiantes por curso"),
+                            dbc.Input(id="g_minimo", type="number", min=1, max=len(instance.df), step=1, value=2),
+                        ]
+                    ),
+                    dbc.FormGroup(
+                        [
+                            html.P("Máximo de estudiantes por curso"),
+                            dbc.Input(id="g_maximo", type="number", min=1, max=len(instance.df), step=1, value=20),
+                        ]
+                    ),
+                    dbc.FormGroup(
+                        [
+                            html.P("Diferencia máxima de genero por curso"),
+                            dbc.InputGroup(
+                                [
+                                    dbc.Input(id="bal_gen", type="number", min=0, max=100, step=1, value=50, placeholder="balance"),
+                                    dbc.InputGroupAddon("%", addon_type="append"),
+                                ],
+                                className="mb-3",
+                            ),
+                        ]
+                    ),
+                    dbc.FormGroup(
+                        [
+                            html.P("Aforo máximo del colegio"),
+                            dbc.Input(id="aforo", type="number", min=0, max=len(instance.df), step=1, value=30),
+                        ]
+                    ),
+                    dbc.Button("Resolver", id="resolver", className="mr-2", n_clicks=0),
+                    dbc.Modal(
+                        [
+                            dbc.ModalHeader("Header"),
+                            dbc.ModalBody(id='modal_text'),
+                            dbc.ModalFooter(
+                                dbc.Button(
+                                    "Close", id="close", className="ml-auto", n_clicks=0
+                                )
+                            ),
+                        ],
+                        id="modal",
+                        is_open=False,
+                    ),
+                ]
+            ),
+        ),
+    ]
+)
+
 tab2_content = html.Div(
     [
         dbc.Row(
@@ -153,15 +147,13 @@ tab2_content = html.Div(
                 dbc.Col(
                     dbc.Card(
                         dbc.CardBody(
-                            [
+                            [   # table of students
                                 dash_table.DataTable(
                                     id='datatable-paging-page-count',
                                     columns=[
                                         {"name": i, "id": i} for i in ['nombre', 'id', 'nivel', 'genero', 'id_hermanos']
-                                        # df.columns
                                     ],
                                     style_table={'overflowX': 'auto'},
-                                    #style_cell={'textAlign': 'left', },
                                     style_cell_conditional=[
                                         {'if': {'column_id': 'nombre'},
                                          'width': '35%'},
@@ -174,7 +166,6 @@ tab2_content = html.Div(
                                         {'if': {'column_id': 'id_hermanos'},
                                          'width': '27%'},
                                     ],
-
                                     css=[{'selector': 'table', 'rule': 'table-layout: fixed'}],
                                     style_cell={
                                         'textAlign': 'left',
@@ -201,21 +192,15 @@ tab2_content = html.Div(
             className="row-with-margin",
             children=[
                 dbc.Col(controls_model,
-                        # dcc.Loading(
-                        #     id="loading-2",
-                        #     children=[controls_model],
-                        #     type="circle",
-                        #     fullscreen=True
-                        # ),
-                        md=4),
+                         md=4),
                 dbc.Col(children=[
-                    dbc.Row(children=[
-                    #html.Div(children=[
-                                    dbc.Col(dcc.Dropdown(id='fileterEstu',multi=True), md=6),
-                                    dbc.Col(dbc.Button("Filtrar", id="filtrar", className="mr-2", n_clicks=0), md=1)
-                                ],),
-                        #style={'display': 'inline-block'}),
-                    dcc.Graph(id="heatmap")
+                    dbc.Row(
+                        className="row-with-margin",
+                        children=[
+                            dbc.Col(dcc.Dropdown(id='fileterEstu',multi=True), md=6),
+                            dbc.Col(dbc.Button("Filtrar", id="filtrar", className="mr-2", n_clicks=0), md=1)
+                        ],),
+                    dcc.Graph(id="scatterplot")
                     ],
                     md=8
                 ),
@@ -234,6 +219,10 @@ tab3_content = dbc.Row([
             md=4),
     ]
 )
+
+#Toast
+
+
 
 # Define the layout
 app.layout = dbc.Container([
@@ -264,10 +253,10 @@ app.layout = dbc.Container([
     # dcc.Store inside the app that stores the intermediate value
     dcc.Store(id='data_solver'),
     dcc.Store(id='data_solver_filtered'),
-
     ],
     fluid=True,
 )
+
 
 # Render the tabs depending on the selection
 @app.callback(
@@ -295,10 +284,13 @@ def render_tab_content(active_tab):
 def update_table(page_current, page_size):
     return df.iloc[page_current*page_size:(page_current+ 1)*page_size].to_dict('records')
 
-# Solve the model
-@app.callback(Output('data_solver', 'data'),
+
+# Solve the model or apply filter
+@app.callback([Output('data_solver', 'data'),
               Output('data_solver_filtered', 'data'),
               Output('fileterEstu', 'value'),
+              Output("modal", "is_open"),
+              Output("modal_text", "children")],
               Input('resolver', 'n_clicks'),
               Input('filtrar', 'n_clicks'),
               State('data_solver', 'data'),
@@ -308,7 +300,11 @@ def update_table(page_current, page_size):
               State('aforo', 'value'),
               State('fileterEstu', 'value')
               )
-def run_model_fitler(click_resolver, click_filtrar, data_solver, g_min, g_max, balance, aforoT, filter_value):
+def run_model_fitler(click_resolver, n_filtrar,
+                     data_solver, g_min, g_max, balance, aforoT, filter_value,
+                     ):
+
+
     ctx = dash.callback_context
     if not ctx.triggered:
         button_id = 'No clicks yet'
@@ -322,18 +318,27 @@ def run_model_fitler(click_resolver, click_filtrar, data_solver, g_min, g_max, b
                                   balance / 100,
                                   aforoT)
         df_sol, estu_asig = opt.resolver_opt(instance, model)
-        # print(estu_asig)
         data = df_sol[['nombre', 'id', 'L', 'Ma', 'Mi', 'J', 'V']]
         data_scater = pd.DataFrame(columns=['nombre', 'id', 'dia'])
+        nombre_dia = {'L': 'Lunes', 'Ma': 'Martes', 'Mi': 'Miércoles', 'J': 'Jueves', 'V': 'Viernes'}
         for i in range(len(data)):
             for col in ['L', 'Ma', 'Mi', 'J', 'V']:
                 if data.loc[i, col] == 1:
                     data_scater = data_scater.append({'nombre': df.loc[i, 'nombre'],
                                                       'id': df.loc[i, 'id'],
-                                                      'dia': col},
+                                                      'dia': nombre_dia[col]},
                                                      ignore_index=True)
         data_returned = data_scater.to_json(date_format='iso', orient='split')
-        return data_returned, data_returned, None
+        # Logic modal
+        # estado = False
+        # if click_resolver:
+        #     estado = True
+        # else:
+        #     estado = False
+        # if n_close:
+        #     estado = not is_open
+
+        return data_returned, data_returned, None, True, estu_asig
     elif button_id == 'filtrar':
         data_scatter = pd.read_json(data_solver, orient='split')
         if filter_value:
@@ -341,41 +346,26 @@ def run_model_fitler(click_resolver, click_filtrar, data_solver, g_min, g_max, b
         else:
             data_scatter_filtered = data_scatter
         data_returned = data_scatter_filtered.to_json(date_format='iso', orient='split')
-        return data_solver, data_returned, None
+        return data_solver, data_returned, None, False, "aaa"
+    else:
+        return (no_update, no_update, no_update)
 
 
 
-@app.callback(Output('heatmap', 'figure'),
+@app.callback(Output('scatterplot', 'figure'),
               Input('data_solver_filtered', 'data')
               )
 def update_scatter(jsonified_sol_data):
-    # model = opt.create_model(instance,
-    #                          g_min,
-    #                          g_max,
-    #                          balance/100,
-    #                          aforoT)
-    # df_sol, estu_asig = opt.resolver_opt(instance, model)
-    # #print(estu_asig)
-    # data = df_sol[['nombre', 'id', 'L', 'Ma', 'Mi', 'J', 'V']]
-    # data_scater = pd.DataFrame(columns = ['nombre', 'id', 'dia'])
-    # for i in range(len(data)):
-    #     for col in ['L', 'Ma', 'Mi', 'J', 'V']:
-    #         if data.loc[i, col] == 1:
-    #             data_scater = data_scater.append({'nombre': df.loc[i, 'nombre'],
-    #                                               'id': df.loc[i, 'id'],
-    #                                               'dia': col},
-    #                                              ignore_index=True)
     data_scater = pd.read_json(jsonified_sol_data, orient='split')
-    #data = df_sol[['L', 'Ma', 'Mi', 'J', 'V']]
-    #fig = px.imshow(data)
-    # fig = px.imshow(data,
-    #                 labels=dict(x="Day of Week", y="Time of Day"),
-    #                 x=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-    #                 y=df_sol.id.astype('str'),
-    #                 )
-    # fig.update_traces(showscale=False)
-    #print(data_scater.head())
-    fig = px.scatter(x=data_scater.dia, y=data_scater.nombre)
+    fig = px.scatter(data_scater, x='dia', y='nombre',
+                     category_orders={"dia": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]}
+                     )
+    fig.update_traces(marker_size=10)
+    fig.update_layout(
+        xaxis_title="Día de la semana",
+        yaxis_title="Estudiante",
+        xaxis_type='category'
+    )
     return fig
 
 # Populated dropdown for filtering students
@@ -390,29 +380,16 @@ def dropdown_filter_options(jsonified_sol_data):
     # dropping ALL duplicate values
     no_repetead = data_scater.drop_duplicates(keep='first')
     no_repetead.reset_index(inplace=True)
-    options = [{'label': no_repetead.loc[i, 'id'], 'value': no_repetead.loc[i, 'nombre']} for i in range(len(no_repetead))]
+    options = [{'label': no_repetead.loc[i, 'nombre'], 'value': no_repetead.loc[i, 'nombre']} for i in range(len(no_repetead))]
     return options
 
-# Populated dropdown for filtering students
+# # Close modal
 # @app.callback(
-#     Output('data_solver_filtered', 'data'),
-#     [Input('data_solver', 'data'),
-#      Input('fileterEstu', 'value')]
+#     Output('modal', 'is_open'),
+#     Input('close', 'nclicks')
 # )
-# def filter_solution(jsonified_sol_data, dropdown_values):
-#     print(type(dropdown_values))
-#     # data_scater = pd.read_json(jsonified_sol_data, orient='split')
-#     # data_scater = data_scater[['id', 'nombre']]
-#     # data_scater.sort_values("id", inplace=True)
-#     # print(data_scater)
-#     # # dropping ALL duplicate values
-#     # no_repetead = data_scater.drop_duplicates(keep='first')
-#     # no_repetead.reset_index(inplace=True)
-#     # print(no_repetead)
-#     # options = [{'label': no_repetead.loc[i, 'id'], 'value': no_repetead.loc[i, 'nombre']} for i in range(len(no_repetead))]
-#     return dropdown_values
-
-
+# def close_modal(nclicks):
+#     return False
 
 
 # main to run the app

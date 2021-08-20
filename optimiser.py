@@ -104,8 +104,10 @@ def resolver_opt(instance,
     # solvername = 'glpk'
     # solverpath_exe = 'C:\\glpk-4.65\\w64\\glpsol'
     solver = SolverFactory(solvername, executable=solverpath_exe)
+    solver.options['tmlim'] = 5
+
     # Resuelve el modelo
-    solver.solve(model)
+    solver.solve(model, options_string="mipgap=0.02")
     # Obtener variables de decisión
     res = model.x.get_values()
 
