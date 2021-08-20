@@ -10,6 +10,7 @@ import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import os
 
 
 
@@ -23,12 +24,14 @@ external_stylesheets = [dbc.themes.BOOTSTRAP,
 
 # Creates the app
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
-                title="Seguridad alimentaria",
+                title="Alternancia",
                 suppress_callback_exceptions=True)
 
 
 # need to run it in heroku
 server = app.server
+
+
 
 # Read data
 # Get a dataframe from data
@@ -41,6 +44,9 @@ instance = Instance(df)
 instance.data_process()
 instance.create_elementos()
 
+
+filepath = os.path.split(os.path.realpath(__file__))[0]
+detalles_text = open(os.path.join(filepath, "losDetalles.md"), "r").read()
 # Define content for tab1
 # initial text
 tab1_text = dcc.Markdown('''
@@ -200,7 +206,8 @@ tab2_content = html.Div(
                         className="row-with-margin",
                         children=[
                             dbc.Col(dcc.Dropdown(id='fileterEstu',multi=True), md=6),
-                            dbc.Col(dbc.Button("Filtrar", id="filtrar", className="mr-2", n_clicks=0), md=1)
+                            dbc.Col(dbc.Button("Filtrar", id="filtrar", className="mr-2", n_clicks=0), md=1),
+                            dbc.Col(dbc.Button("Limpiar", id="limpiar", className="mr-2", n_clicks=0), md=1)
                         ],),
                     dcc.Graph(id="scatterplot")
                     ],
@@ -213,16 +220,13 @@ tab2_content = html.Div(
 )
 
 tab3_content = dbc.Row([
-        dbc.Col(html.Div([
-            html.H4(
-                    children="Los retos3", className="header-subtitle"
-                )]
-        ),
-            md=4),
+        dbc.Col(dcc.Markdown(detalles_text, dangerously_allow_html=True),
+                 md=8),
+        dbc.Col( md=4),
     ]
 )
 
-#Toast
+
 
 
 
@@ -231,11 +235,12 @@ app.layout = dbc.Container([
         html.Div(
             children=[
                 html.H1(
-                    children="Oferta-Demanda", className="header-title"
+                    children="Alternancia escolar", className="header-title"
                 ),
                 html.P(
-                    children="Herramientas de análisis del precio de los productos "
-                             " agrícolas en las distintas plazas de mercado",
+                    children=html.P(["Optimización  de jornadas escolares",
+                                     html.Br(),
+                                     " Modelo de alternancia"]),
                     className="header-description",
                 ),
             ],
@@ -295,6 +300,7 @@ def update_table(page_current, page_size):
               Output("modal_text", "children")],
               Input('resolver', 'n_clicks'),
               Input('filtrar', 'n_clicks'),
+              Input('limpiar', 'n_clicks'),
               State('data_solver', 'data'),
               State('g_minimo', 'value'),
               State('g_maximo', 'value'),
@@ -302,13 +308,13 @@ def update_table(page_current, page_size):
               State('aforo', 'value'),
               State('fileterEstu', 'value')
               )
-def run_model_fitler(click_resolver, n_filtrar,
+def run_model_fitler_reset(click_resolver, n_filtrar, n_limpiar,
                      data_solver, g_min, g_max, balance, aforoT, filter_value,
                      ):
     # pop up setting
-    estado = True # turn to false and activate the next two lines to not showing it at the beginning
-    # if click_resolver:
-    #     estado = True
+    estado = False # turn to false and activate the next two lines to not showing it at the beginning
+    if click_resolver:
+        estado = True
 
     ctx = dash.callback_context
     if not ctx.triggered:
@@ -345,6 +351,8 @@ def run_model_fitler(click_resolver, n_filtrar,
             data_scatter_filtered = data_scatter
         data_returned = data_scatter_filtered.to_json(date_format='iso', orient='split')
         return data_solver, data_returned, None, False, "aaa"
+    elif button_id == 'limpiar':
+        return data_solver, data_solver, None, False, "aaa"
     else:
         return (no_update, no_update, no_update)
 
