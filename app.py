@@ -122,12 +122,12 @@ controls_model = html.Div(
                     dbc.Button("Resolver", id="resolver", className="mr-2", n_clicks=0),
                     dbc.Modal(
                         [
-                            dbc.ModalHeader("Header"),
+                            dbc.ModalHeader("Detalle de la solución "),
                             dbc.ModalBody(id='modal_text'),
                             dbc.ModalFooter(
-                                dbc.Button(
-                                    "Close", id="close", className="ml-auto", n_clicks=0
-                                )
+                                # dbc.Button(
+                                #     "Close", id="close", className="ml-auto", n_clicks=0
+                                # )
                             ),
                         ],
                         id="modal",
@@ -303,7 +303,10 @@ def update_table(page_current, page_size):
 def run_model_fitler(click_resolver, n_filtrar,
                      data_solver, g_min, g_max, balance, aforoT, filter_value,
                      ):
-
+    # pop up setting
+    estado = True # turn to false and activate the next two lines to not showing it at the beginning
+    # if click_resolver:
+    #     estado = True
 
     ctx = dash.callback_context
     if not ctx.triggered:
@@ -319,26 +322,19 @@ def run_model_fitler(click_resolver, n_filtrar,
                                   aforoT)
         df_sol, estu_asig = opt.resolver_opt(instance, model)
         data = df_sol[['nombre', 'id', 'L', 'Ma', 'Mi', 'J', 'V']]
-        data_scater = pd.DataFrame(columns=['nombre', 'id', 'dia'])
+        data_scatter = pd.DataFrame(columns=['nombre', 'id', 'dia'])
         nombre_dia = {'L': 'Lunes', 'Ma': 'Martes', 'Mi': 'Miércoles', 'J': 'Jueves', 'V': 'Viernes'}
         for i in range(len(data)):
             for col in ['L', 'Ma', 'Mi', 'J', 'V']:
                 if data.loc[i, col] == 1:
-                    data_scater = data_scater.append({'nombre': df.loc[i, 'nombre'],
+                    data_scatter = data_scatter.append({'nombre': df.loc[i, 'nombre'],
                                                       'id': df.loc[i, 'id'],
                                                       'dia': nombre_dia[col]},
                                                      ignore_index=True)
-        data_returned = data_scater.to_json(date_format='iso', orient='split')
-        # Logic modal
-        # estado = False
-        # if click_resolver:
-        #     estado = True
-        # else:
-        #     estado = False
-        # if n_close:
-        #     estado = not is_open
-
-        return data_returned, data_returned, None, True, estu_asig
+        data_returned = data_scatter.to_json(date_format='iso', orient='split')
+        text_popup = "Con los parámetros actuales se logran asignar {} de {} estudiantes.".\
+                         format(int(estu_asig),len(instance.df)) + "\r\n Intenta con otros parámetros"
+        return data_returned, data_returned, None, estado, text_popup
     elif button_id == 'filtrar':
         data_scatter = pd.read_json(data_solver, orient='split')
         if filter_value:
