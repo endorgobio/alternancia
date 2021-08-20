@@ -32,7 +32,9 @@ server = app.server
 
 # Read data
 # Get a dataframe from data
-df = pd.read_csv(r'data\Estudiantes.csv')
+#df = pd.read_csv(r'data\Estudiantes.csv')
+df = pd.read_csv(r'https://raw.githubusercontent.com/endorgobio/alternancia/master/data/Estudiantes.csv')
+
 # Create instance
 instance = Instance(df)
 # Preprocess dataframe
