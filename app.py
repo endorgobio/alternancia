@@ -32,7 +32,7 @@ server = app.server
 
 # Read data
 # Get a dataframe from data
-df = pd.read_excel (r'data\Estudiantes.xlsx')
+df = pd.read_csv(r'data\Estudiantes.csv')
 # Create instance
 instance = Instance(df)
 # Preprocess dataframe
