@@ -102,8 +102,8 @@ def resolver_opt(instance,
                  solverpath_exe = 'D:\\glpk-4.65\\w64\\glpsol'):
     # Configura optimizador
     # solvername = 'glpk'
-    # solverpath_exe = 'C:\\glpk-4.65\\w64\\glpsol'
-    # solver = SolverFactory(solvername, executable=solverpath_exe)
+    solverpath_exe = 'C:\\glpk-4.65\\w64\\glpsol'
+    #solver = SolverFactory(solvername, executable=solverpath_exe)
     solver = SolverFactory(solvername)
     solver.options['tmlim'] = 5
 

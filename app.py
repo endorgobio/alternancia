@@ -24,6 +24,7 @@ external_stylesheets = [dbc.themes.BOOTSTRAP,
 
 # Creates the app
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
+                external_scripts=['https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML',],
                 title="Alternancia",
                 suppress_callback_exceptions=True)
 
@@ -44,40 +45,49 @@ instance = Instance(df)
 instance.data_process()
 instance.create_elementos()
 
-# Read narratives
+# narratives narratives
 filepath = os.path.split(os.path.realpath(__file__))[0]
-detalles_text = open(os.path.join(filepath, "losDetalles.md"), "r").read()
+# narrative tab 1
 historia_text = open(os.path.join(filepath, "laHistoria.md"), "r").read()
-# Define content for tab1
-# initial text
-tab1_text = dcc.Markdown('''
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis et sapien eu purus malesuada rutrum non sed tortor. 
-Phasellus iaculis, ipsum id vulputate euismod, ex purus varius justo, in sollicitudin risus purus sodales diam. 
-Mauris sed commodo neque. Aliquam at urna scelerisque ante ornare rutrum. Vestibulum in dui at arcu fringilla 
-molestie. Phasellus sollicitudin porta massa, blandit suscipit velit aliquet id. Integer efficitur, libero ut 
-consectetur fermentum, est massa feugiat ligula, sed facilisis urna arcu sit amet turpis. Maecenas malesuada 
-neque eu felis eleifend accumsan. Nulla posuere cursus nunc eget dictum.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis et sapien eu purus malesuada rutrum non sed tortor. 
-Phasellus iaculis, ipsum id vulputate euismod, ex purus varius justo, in sollicitudin risus purus sodales diam. 
-Mauris sed commodo neque. Aliquam at urna scelerisque ante ornare rutrum. Vestibulum in dui at arcu fringilla 
-molestie. Phasellus sollicitudin porta massa, blandit suscipit velit aliquet id. Integer efficitur, libero ut 
-consectetur fermentum, est massa feugiat ligula, sed facilisis urna arcu sit amet turpis. Maecenas malesuada 
-neque eu felis eleifend accumsan. Nulla posuere cursus nunc eget dictum.
-''')
 
-reto_text = dcc.Markdown('''
-* ** Reto 1**: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis et sapien eu purus malesuada rutrum non sed tortor. 
-Phasellus iaculis
-* **Reto 2**:  est massa feugiat ligula, sed facilisis urna arcu sit amet turpis. Maecenas malesuada 
-neque eu felis eleifend accumsan. Nulla posuere cur
-''')
+#narrative tab2
+detalles_text = open(os.path.join(filepath, "losDetalles.md"), "r").read()
 
 tab1_content = dbc.Row([
         dbc.Col(dcc.Markdown(historia_text, dangerously_allow_html=True), md=8),
         dbc.Col(html.Div([
-            html.H4(children="Los retos", className="header-subtitle"),
-            reto_text]),
+            html.Img(src="/assets/images/banner_blue_text.png", className='banner_subsection'),
+            #html.H4(children="Los retos", className="header-subtitle"),
+            dbc.Card([
+                # dbc.CardImg(src="https://source.unsplash.com/daily", top=True),
+                #dbc.CardImg(src="/assets/images/banner_blue.png", top=True),
+                dbc.CardBody([
+                    #html.H6("Reto 1", className="card-title"),
+                    html.P(
+                        "Expresar la programación de las jornadas de "
+                        "alternancia como un modelo matemático y resololverlo "
+                        "sin adquirir licencias o software de optimización",
+                        style={'textAlign': 'justify'},
+                        className="card-text",
+                    ),
+                ])
+            ]),
+            dbc.Card([
+                # dbc.CardImg(src="https://source.unsplash.com/daily", top=True),
+                # dbc.CardImg(src="/assets/images/banner_blue.png", top=True),
+                dbc.CardBody([
+                    #html.H6("Reto 1", className="card-title"),
+                    html.P(
+                        "Diseñar una interfaz que permita al tomador de "
+                        " decisiones visualizar la solución.",
+                        style={'textAlign': 'justify'},
+                        className="card-text",
+                    ),
+                ])
+            ]),
+            #reto_text
+        ]),
             md=4),
     ]
 )
@@ -221,15 +231,12 @@ tab2_content = html.Div(
 )
 
 tab3_content = dbc.Row([
+        html.Div(id='static',children='$$ x=1 $$'),
         dbc.Col(dcc.Markdown(detalles_text, dangerously_allow_html=True),
                  md=8),
         dbc.Col( md=4),
     ]
 )
-
-
-
-
 
 # Define the layout
 app.layout = dbc.Container([
