@@ -44,9 +44,10 @@ instance = Instance(df)
 instance.data_process()
 instance.create_elementos()
 
-
+# Read narratives
 filepath = os.path.split(os.path.realpath(__file__))[0]
 detalles_text = open(os.path.join(filepath, "losDetalles.md"), "r").read()
+historia_text = open(os.path.join(filepath, "laHistoria.md"), "r").read()
 # Define content for tab1
 # initial text
 tab1_text = dcc.Markdown('''
@@ -73,7 +74,7 @@ neque eu felis eleifend accumsan. Nulla posuere cur
 ''')
 
 tab1_content = dbc.Row([
-        dbc.Col(tab1_text, md=8),
+        dbc.Col(dcc.Markdown(historia_text, dangerously_allow_html=True), md=8),
         dbc.Col(html.Div([
             html.H4(children="Los retos", className="header-subtitle"),
             reto_text]),
