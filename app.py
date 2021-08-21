@@ -24,7 +24,7 @@ external_stylesheets = [dbc.themes.BOOTSTRAP,
 
 # Creates the app
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
-                external_scripts=['https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML',],
+                external_scripts=['//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML',],
                 title="Alternancia",
                 suppress_callback_exceptions=True)
 
