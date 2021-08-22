@@ -11,3 +11,8 @@ The mathematical model and implementation is detailed in this colab [notebook](h
 
 * GLPK solver was instaled via the use of an [Aptfile](https://raw.githubusercontent.com/endorgobio/optimiserApp/master/Aptfile). It requires to add a buildingpack (https://github.com/heroku/heroku-buildpack-apt)  whitin the settings menu. 
 Details are given in this [link](https://devcenter.heroku.com/articles/buildpacks)
+
+* To render the latex formulas of the model we used Mathjax as an external script to do so, this two instructions are important:
+  * `external_scripts=['//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML']`
+  * The script file [mathjax.js](https://raw.githubusercontent.com/endorgobio/alternancia/master/assets/mathjax.js)
+* 
