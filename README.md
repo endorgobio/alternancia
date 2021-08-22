@@ -15,4 +15,8 @@ Details are given in this [link](https://devcenter.heroku.com/articles/buildpack
 * To render the latex formulas of the model we used Mathjax as an external script to do so, this two instructions are important:
   * `external_scripts=['//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML']`
   * The script file [mathjax.js](https://raw.githubusercontent.com/endorgobio/alternancia/master/assets/mathjax.js)
-* 
+
+Regarding the app implementation in Dash, this projects is a good example for the following components:
+* An application with multiple tabs
+* The use of data-table component
+* dcc.Store inside the app that stores the intermediate value
