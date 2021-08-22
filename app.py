@@ -214,7 +214,12 @@ tab2_content = html.Div(
             align="center",
 
         ),
-        # Line graph and controls
+        dbc.Row(
+            html.Div(
+                    html.P("El optimizador le permitirá evaluar diferentes soluciones"),
+                    style={'justify-content': 'center'}),
+            ),
+        # Solver an filter
         dbc.Row(
             className="row-with-margin",
             children=[
