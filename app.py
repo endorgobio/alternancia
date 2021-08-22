@@ -63,8 +63,10 @@ data = json.load(f)
 tab1_content = dbc.Row([
         dbc.Col(dcc.Markdown(historia_text, dangerously_allow_html=True), md=8),
         dbc.Col(html.Div([
-            html.Img(src="/assets/images/banner_blue_text.png", className='banner_subsection'),
-            #html.H4(children="Los retos", className="header-subtitle"),
+            #html.Img(src="/assets/images/banner_blue_text.png", className='banner_subsection'),
+            html.Div(
+                html.P("Los retos", className="header-description"),
+                className="header_subsection"),
             dbc.Card([
                 # dbc.CardImg(src="https://source.unsplash.com/daily", top=True),
                 #dbc.CardImg(src="/assets/images/banner_blue.png", top=True),
@@ -307,10 +309,9 @@ app.layout = dbc.Container([
                 html.H1(
                     children="Alternancia escolar", className="header-title"
                 ),
-                html.P(
-                    children=html.P(["Optimización  de jornadas escolares",
+                html.P(["Optimización  de jornadas escolares",
                                      html.Br(),
-                                     " Modelo de alternancia"]),
+                                     " Modelo de alternancia"],
                     className="header-description",
                 ),
             ],
