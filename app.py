@@ -1,6 +1,5 @@
 import pandas as pd
 from dash import no_update
-
 import optimiser as opt
 from utilities import Instance
 import plotly.express as px
@@ -11,6 +10,7 @@ from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import os
+import json
 
 
 
@@ -50,9 +50,15 @@ filepath = os.path.split(os.path.realpath(__file__))[0]
 # narrative tab 1
 historia_text = open(os.path.join(filepath, "laHistoria.md"), "r").read()
 
-
-#narrative tab2
+# narrative tab2
 detalles_text = open(os.path.join(filepath, "losDetalles.md"), "r").read()
+
+
+f = open('modelo.json', )
+# returns JSON object as
+# a dictionary
+data = json.load(f)
+
 
 tab1_content = dbc.Row([
         dbc.Col(dcc.Markdown(historia_text, dangerously_allow_html=True), md=8),
@@ -231,10 +237,66 @@ tab2_content = html.Div(
 )
 
 tab3_content = dbc.Row([
-        html.Div(id='static',children='$$ x=1 $$'),
-        dbc.Col(dcc.Markdown(detalles_text, dangerously_allow_html=True),
-                 md=8),
-        dbc.Col( md=4),
+    dbc.Col(
+        html.Div(id='static',children=[
+            html.P("Detras de la asignación de jornadas para cada estudiante hay un modelo "
+                   "matemático que ayuda a tomar dicha decisión. Este es el modelo:"),
+            dbc.Card([
+                # dbc.CardImg(src="https://source.unsplash.com/daily", top=True),
+                # dbc.CardImg(src="/assets/images/banner_blue.png", top=True),
+                dbc.CardBody([
+                    dcc.Markdown('''
+                        Sea `E` el conjunto de estudiantes, cada uno de ellos con un curso `c`
+                        y un genero `g` asociado. Sea `C` el conjunto de cursos o niveles, cada 
+                        uno con un número mínimo `nmin` y máximo `nmax` de estudiantes. Sea `D` 
+                        el conjunto de días de la semana y `P` el conjunto de patrones factibles 
+                        para alternacia (ej. `L-Mi, Ma-J, Mi-V, ...`). Sea &alpha; el aforo máximo del
+                        colegio y &beta; la máxima diferencia porcentual entre el número de niñas y niños
+                        en un curso.
+                        
+                        Considere la variable `x` que indica si el estudiante i es asignado 
+                        al patron k; la variable `y` que determina si un conjunto de hermanos l es asignado
+                        a un patrón k; y la variable `z` que indica si el curso j se programa en el día d 
+                    '''),
+                    dcc.Markdown(''' La función objetivo maximiza el número de estudiantes asignados, '''),
+                    data['objetivo'],
+                    dcc.Markdown(''' Garantizando que a cada estudiante se asigna cuando más un patrón, '''),
+                    data['restriccion1'],
+                    dcc.Markdown(''' La diferencia porcentual entre el número de niñas y niños en cada curso no 
+                         excede el valor &beta;'''),
+                    data['restriccion2'],
+                    dcc.Markdown(''' El número de estudiantes en cada curso esta entre su valor mínimo y máximo'''),
+                    data['restriccion3'],
+                    data['restriccion4'],
+                    dcc.Markdown(''' No se supere el aforo del colegio'''),
+                    data['restriccion5'],
+                ])
+            ]),
+        ]),
+        md=8),
+    dbc.Col(
+        [
+            dbc.Card(
+                dbc.CardBody([
+                    html.P("El modelo se implementó en python, haciendo uso de la libreria"
+                           "para modelación Pyomo")
+                ])
+            ),
+            dbc.Card(
+                dbc.CardBody([
+                    html.P("El solver empleado para resolver el modelo fue glpk, cuyo uso  para "
+                           "fines no comerciales esta regulado the por el acuerdo 'GNU General Public License'")
+                ])
+            ),
+            dbc.Card(
+                dbc.CardBody([
+                    html.P("La visualización de los resultados del modelo se implemento haciendo uso del framework "
+                           "dash soportado plotly para las gráficas y visualizaciones'")
+                ])
+            )
+        ],
+        md=4
+    ),
     ]
 )
 
