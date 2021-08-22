@@ -47,8 +47,8 @@ body {
     box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.18);
 }
 
-}
-.header_subsection {
+
+.header_subsection1 {
     background-color: #0047AB;
     width: 100%;
     border-radius: 5%
@@ -58,7 +58,6 @@ body {
     box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.18);
     margin-bottom: 20px;
 }
-
 
 *[data-dash-is-loading="true"]{
     visibility: hidden;

@@ -66,7 +66,7 @@ tab1_content = dbc.Row([
             #html.Img(src="/assets/images/banner_blue_text.png", className='banner_subsection'),
             html.Div(
                 html.P("Los retos", className="header-description"),
-                className="header_subsection"),
+                className="header_subsection1"),
             dbc.Card([
                 # dbc.CardImg(src="https://source.unsplash.com/daily", top=True),
                 #dbc.CardImg(src="/assets/images/banner_blue.png", top=True),
