@@ -322,7 +322,15 @@ app.layout = dbc.Container([
             ],
             className="header",
         ),
-
+        # Loading allows the spinner showing something is runing
+        dcc.Loading(
+            id="loading",
+            # dcc.Store inside the app that stores the intermediate value
+            children=[dcc.Store(id='data_solver'),
+                      dcc.Store(id='data_solver_filtered')],
+            fullscreen=True,
+            type='circle'
+        ),
         dbc.Tabs(
             [
                 dbc.Tab(label="La historia", tab_id="historia"),
@@ -333,9 +341,6 @@ app.layout = dbc.Container([
             active_tab="historia",
         ),
         dbc.Row(id="tab-content", className="p-4"),
-    # dcc.Store inside the app that stores the intermediate value
-    dcc.Store(id='data_solver'),
-    dcc.Store(id='data_solver_filtered'),
     ],
     fluid=True,
 )
