@@ -49,11 +49,9 @@ instance.create_elementos()
 filepath = os.path.split(os.path.realpath(__file__))[0]
 # narrative tab 1
 historia_text = open(os.path.join(filepath, "laHistoria.md"), "r").read()
-
-# narrative tab2
+# narrative tab3
 detalles_text = open(os.path.join(filepath, "losDetalles.md"), "r").read()
-
-
+# modelo
 f = open('modelo.json', )
 # returns JSON object as
 # a dictionary
