@@ -61,10 +61,9 @@ data = json.load(f)
 tab1_content = dbc.Row([
         dbc.Col(dcc.Markdown(historia_text, dangerously_allow_html=True), md=8),
         dbc.Col(html.Div([
-            #html.Img(src="/assets/images/banner_blue_text.png", className='banner_subsection'),
             html.Div(
-                html.P("Los retos", className="header-description"),
-                className="header_subsection1"),
+                html.P("Los retos", className="subheader-description"),
+            ),
             dbc.Card([
                 # dbc.CardImg(src="https://source.unsplash.com/daily", top=True),
                 #dbc.CardImg(src="/assets/images/banner_blue.png", top=True),
@@ -305,23 +304,83 @@ tab3_content = dbc.Row([
     ]
 )
 
+tabs_styles = {
+    'height': '44px',
+    'align-items': 'center'
+}
+
+tab_label_style = {
+    'color' : 'black'
+}
+
+activetab_label_style = {
+    'color': '#FD6E72',
+    'fontWeight': 'bold'
+}
+
+ENDORGOBIO_LOGO = "assets/images/logo-Rojo.png"
+INICIO = "assets/images/inicio.png"
+POSTULATE = "assets/images/postulate.png"
+
+
+back_bar = dbc.Row(
+    [
+        dbc.Col(
+            html.A(
+                dbc.Row(
+                    [dbc.Col(html.Img(src=POSTULATE, height="30px")),],
+                    align="center",
+                    no_gutters=True,
+                ),
+            href="https://sites.google.com/view/proyectoendorgobio/post%C3%BAlate",
+            ),
+        ),
+        dbc.Col(
+            html.A(
+                dbc.Row(
+                    [dbc.Col(html.Img(src=INICIO, height="30px")),],
+                    align="center",
+                    no_gutters=True,
+                ),
+            href="https://sites.google.com/view/proyectoendorgobio/inicio",
+            ),
+        )
+    ],
+    no_gutters=False,
+    className="ml-auto flex-nowrap mt-3 mt-md-0",
+    align="center",
+)
+
+navbar = dbc.Navbar(
+    [
+        html.A(
+            # Use row and col to control vertical alignment of logo / brand
+            dbc.Row(
+                [
+                    dbc.Col(html.Img(src=ENDORGOBIO_LOGO, height="30px")),
+                ],
+                align="center",
+                no_gutters=True,
+            ),
+            href="https://plotly.com",
+        ),
+        dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
+        dbc.Collapse(
+            back_bar, id="navbar-collapse", navbar=True, is_open=False
+        ),
+    ],
+    color="light",
+    dark=True,
+    fixed='top'
+)
+
+
 # Define the layout
 app.layout = dbc.Container([
-        html.Div(
-            children=[
-                html.H1(
-                    children="Alternancia escolar", className="header-title"
-                ),
-                html.P(["Optimización  de jornadas escolares",
-                                     html.Br(),
-                                     " Modelo de alternancia"],
-                    className="header-description",
-                ),
-            ],
-            className="header",
-        ),
-        # Loading allows the spinner showing something is runing
-        dcc.Loading(
+    navbar,
+    dbc.Row(html.Img(src='assets/images/imagenBanner-Alternancia2.jpg', style={'width': '100%'})),
+    # Loading allows the spinner showing something is runing
+    dcc.Loading(
             id="loading",
             # dcc.Store inside the app that stores the intermediate value
             children=[dcc.Store(id='data_solver'),
@@ -329,16 +388,17 @@ app.layout = dbc.Container([
             fullscreen=True,
             type='circle'
         ),
-        dbc.Tabs(
+    dbc.Tabs(
             [
-                dbc.Tab(label="La historia", tab_id="historia"),
-                dbc.Tab(label="La solución", tab_id="solucion"),
-                dbc.Tab(label="Los detalles", tab_id="detalles"),
+                dbc.Tab(label="La historia", tab_id="historia", label_style=tab_label_style, active_label_style=activetab_label_style),
+                dbc.Tab(label="La solución", tab_id="solucion", label_style=tab_label_style, active_label_style=activetab_label_style),
+                dbc.Tab(label="Los detalles", tab_id="detalles", label_style=tab_label_style, active_label_style=activetab_label_style),
             ],
             id="tabs",
             active_tab="historia",
         ),
-        dbc.Row(id="tab-content", className="p-4"),
+    dbc.Row(id="tab-content", className="p-4"),
+    dbc.Row(html.Img(src='assets/images/footnote.png', style={'width':'100%'})),
     ],
     fluid=True,
 )
