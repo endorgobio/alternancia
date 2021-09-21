@@ -398,7 +398,7 @@ app.layout = dbc.Container([
             active_tab="historia",
         ),
     dbc.Row(id="tab-content", className="p-4"),
-    dbc.Row(html.Img(src='assets/images/footnote.png', style={'width':'100%'})),
+    dbc.Row(html.Img(src='assets/images/pie-endorgobio.jpg', style={'width':'100%'})),
     ],
     fluid=True,
 )
